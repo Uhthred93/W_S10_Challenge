@@ -1,5 +1,7 @@
 import React, { useReducer } from 'react';
 import { useCreateOrderMutation } from '../state/apiSlice';
+import { useDispatch } from 'react-redux';
+import { useFetchOrderHistoryQuery } from '../state/apiSlice'; // Import the query hook
 
 const initialFormState = {
   fullName: '',
@@ -25,6 +27,9 @@ function formReducer(state, action) {
 export default function PizzaForm() {
   const [formState, dispatch] = useReducer(formReducer, initialFormState);
   const [createOrder, { isLoading, isError, error }] = useCreateOrderMutation();
+  
+  // Fetch order history and get refetch function
+  const { refetch } = useFetchOrderHistoryQuery();
 
   // Update form field values
   const handleChange = (e) => {
@@ -51,7 +56,10 @@ export default function PizzaForm() {
         size,
         toppings: selectedToppings,
       }).unwrap();
-      dispatch({ type: 'RESET_FORM' }); // Reset form on success
+      
+      // Reset the form and refetch the order list
+      dispatch({ type: 'RESET_FORM' });
+      await refetch(); // Refetch the order history to show the new order
     } catch (err) {
       console.error('Failed to submit order:', err);
     }
@@ -152,4 +160,6 @@ export default function PizzaForm() {
     </form>
   );
 }
+
+
 
